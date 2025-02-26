@@ -4,103 +4,38 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.0.0/bundles/stomp.umd.min.js"></script>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js"></script>
 </head>
 <body>
 
-<h2>PLEASE HELP ME</h2>
-<button onclick="createGame()">CREATE NEW GAME!</button>
-<button onclick="joinGame()">JOIN TO GAME!</button>
+<button onclick="createGame()">CREATE NEW GAME</button>
+<input type="text" id="gameIdInput" placeholder="GAME ID">
+<button onclick="joinGame()">JOIN TO GAME</button>
+<button onclick="getAllGames()">GET ALL GAMES</button>
+<input type="text" id="playerNameInput" placeholder="YOUR NAME">
+<button onclick="getBoard()">GET BOARD</button>
 
-<h2>TWOJA PLANSZA</h2>
-<div id="board" class="board"></div>
+<div id="gameId">
+    <p>?</p>
+</div>
 
-<script>
+<div id="player1">
+    <p>p1</p>
+</div>
 
-    const gameId=1234;
+<div id="player2">
+    <p>p2</p>
+</div>
 
-    //TWORZENIE KLIENTA STOMP
-    const stompClient = new StompJs.Client({
-        brokerURL: 'ws://localhost:8080/game',
-        debug: (str) => { console.log(str); }
-    });
+<div id="allGames">
+    <p>Games</p>
+</div>
 
-    //POŁĄCZ KLIENTA STOMP
-    stompClient.onConnect = (frame) => {
-        console.log('Connected: ' + frame);
-
-        stompClient.subscribe('/topic/boardUpdate', (message) =>{
-            console.log("Subscribed topic: ", JSON.parse(message.body));
-            const board = JSON.parse(message.body);
-            drawBoard(board)
-        });
-
-        stompClient.subscribe('/topic/gameCreated', (message) =>{
-            console.log("Game created: ", JSON.parse(message.body));
-        });
-
-        stompClient.subscribe('/topic/gameStarted', (message) =>{
-            console.log("Game started: ", JSON.parse(message.body));
-        });
-    }
-
-    //OBSŁUGA BŁĘDÓW
-    stompClient.onStompError = (frame) => {
-        console.error('STOMP ERROR', frame)
-    }
-
-    //ROZPOCZYNANIE POŁĄCZENIA
-    stompClient.activate();
-
-    //FUNKCJA DO WYSYŁANIA WIADOMOŚĆI DO SERWERA
-    function createGame() {
-        const player = "Agatka"; //todo: pobrać użytkownika z inputa
-        stompClient.publish({
-            destination: "/app/createGame",
-            body: JSON.stringify(player)
-        });
-    }
-
-    //FUNKCJA DO DOŁĄCZENIA DO GRY
-    function joinGame(gameId, player) {
-        stompClient.publish({
-            destination: "/app/joinGame",
-            body: JSON.stringify({gameId: gameId, player: player})
-        });
-    }
-
-    //NAMALUJ TABLICE
-    function drawBoard(board) {
-        const boardDiv = document.getElementById("board");
-        boardDiv.innerHTML = ""; //czysci stare elementy
-
-        for (let row = 0; row < board.length; row++) {
-            for (let col = 0; col < board[row].length; col++) {
-                const cell = document.createElement("div");
-                cell.classList.add("cell");
-
-                switch (board[row][col]) {
-                    case '-':
-                        cell.classList.add("water");
-                        break;
-                    case 'O':
-                        cell.classList.add("ship");
-                        break;
-                    case "X":
-                        cell.classList.add("hit");
-                        cell.innerText = "X";
-                        break;
-                    case "M":
-                        cell.classList.add("miss");
-                        cell.innerText = "•";
-                        break;
-                }
-                boardDiv.appendChild(cell)
-            }
-        }
-    }
-
-</script>
+<h2>BOARD 1</h2>
+<div id="board1" class="board"></div>
+<h2>BOARD 2</h2>
+<div id="board2" class="board"></div>
 
 </body>
 </html>

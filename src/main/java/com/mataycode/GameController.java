@@ -4,13 +4,21 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 public class GameController {
     private Map<String, GameSession> activeGames = new ConcurrentHashMap<>();
 
+    @MessageMapping("/getAllGames")
+    @SendTo("/topic/getAllGames")
+    public Set<String> getGameIdOfStartedGames() {
+        return activeGames.keySet();
+    }
 
     //createGame(player) – tworzy nową grę i zwraca ID gry.
     @MessageMapping("/createGame")
@@ -32,14 +40,14 @@ public class GameController {
 
         GameSession game = activeGames.get(gameId);
 
-        System.out.println("Game id: " + gameId);
-        System.out.println("Active games get game: " + activeGames.get(gameId));
-
         if (game != null && !game.isReady()) {
             game.addPlayer(player);
         }
 
+        activeGames.put(gameId, game);
+
         System.out.println("Game started");
+        System.out.println(game);
         return game;
     }
 
@@ -57,7 +65,7 @@ public class GameController {
             return null; //nie można strzelać jeśli to nie twoja tura.
         }
 
-        boolean hit = game.attack(x,y, player);
+        boolean hit = game.attack(x, y, player);
         game.switchTurn(); //zmiana tury
 
         return Map.of(
@@ -81,7 +89,7 @@ public class GameController {
             return false; //gra nie istnieje
         }
 
-        return game.placeShip(x, y,player);
+        return game.placeShip(x, y, player);
     }
 
     @MessageMapping("/checkGameOver")
@@ -104,12 +112,33 @@ public class GameController {
 
     @MessageMapping("/game/board")
     @SendTo("/topic/boardUpdate")
-    public char[][] sendBoard(String gameId) {
+    public List<char[][]> sendEmptyBoard(Map<String, Object> payload) {
+
+        String gameId = (String) payload.get("gameId");
         GameSession game = activeGames.get(gameId);
-        if (game != null) {
-            return game.getPlayer1Board().getBoard();
+
+        //BOARD 1
+        GameBoard board1 = game.getPlayer1Board();
+        board1.placeShip(6,6);
+
+        char[][] emptyBoard = new char[10][10];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                emptyBoard[i][j] = board1.getBoard()[i][j];
+            }
         }
-        System.out.println("return new board");
-        return new char[10][10];
+
+        GameBoard board2 = game.getPlayer2Board();
+        char[][] emptyBoard2 = new char[10][10];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                emptyBoard2[i][j] = board2.getBoard()[i][j];
+            }
+        }
+
+        List<char[][]> boards = new ArrayList<>();
+        boards.add(emptyBoard);
+        boards.add(emptyBoard2);
+        return boards;
     }
 }

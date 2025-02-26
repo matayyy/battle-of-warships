@@ -87,6 +87,18 @@ public class GameSession {
         return player2Board;
     }
 
+    public String getPlayer1() {
+        return player1;
+    }
+
+    public String getPlayer2() {
+        return player2;
+    }
+
+    public String getCurrentTurn() {
+        return currentTurn;
+    }
+
     @Override
     public String toString() {
         return "GameSession{" +
