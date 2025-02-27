@@ -32,10 +32,35 @@
     <p>Games</p>
 </div>
 
-<h2>BOARD 1</h2>
-<div id="board1" class="board"></div>
-<h2>BOARD 2</h2>
-<div id="board2" class="board"></div>
+
+<div style="display: flex; gap: 20px">
+    <!-- GAME BOARD -->
+    <div>
+        <h2>BOARD 1</h2>
+        <div id="board1" class="board"></div>
+    </div>
+
+    <!-- GAME BOARD -->
+    <div>
+        <h2>BOARD 2</h2>
+        <div id="board2" class="board" ></div>
+    </div>
+
+    <!-- Lista statków do przeciągania -->
+    <div id="shipContainer">
+        <h2>AVAILABLE SHIPS:</h2>
+        <div class="ship" draggable="true" data-size="4">🚢🚢🚢🚢</div>
+        <div class="ship" draggable="true" data-size="3">🚢🚢🚢</div>
+        <div class="ship" draggable="true" data-size="3">🚢🚢🚢</div>
+        <div class="ship" draggable="true" data-size="2">🚢🚢</div>
+        <div class="ship" draggable="true" data-size="2">🚢🚢</div>
+        <div class="ship" draggable="true" data-size="1">🚢</div>
+        <div class="ship" draggable="true" data-size="1">🚢</div>
+        <div class="ship" draggable="true" data-size="1">🚢</div>
+        <div class="ship" draggable="true" data-size="1">🚢</div>
+    </div>
+</div>
+
 
 </body>
 </html>

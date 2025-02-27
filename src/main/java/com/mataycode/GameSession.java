@@ -43,11 +43,16 @@ public class GameSession {
         return gameId;
     }
 
+
     public boolean attack(int x, int y, String player) {
-        if (player.equals(player1)) {
-            return player2Board.attack(x, y); //atatujemy plansze przeciwnika
-        } else if (player.equals(player2)) {
-            return player1Board.attack(x, y);
+        if (currentTurn.equals(player)) {
+            if (player.equals(player1)) {
+                switchTurn();
+                return player2Board.attack(x, y); //atatujemy plansze przeciwnika
+            } else if (player.equals(player2)) {
+                switchTurn();
+                return player1Board.attack(x, y);
+            }
         }
         return false;
     }
@@ -59,15 +64,6 @@ public class GameSession {
             return player2Board.placeShip(x, y);
         }
         return false;
-    }
-
-    public void printBoard(String player) {
-        if (player.equals(player1)) {
-            player1Board.printBoard();
-        }
-        if (player.equals(player2)) {
-            player2Board.printBoard();
-        }
     }
 
     public boolean isGameOver(String player) {

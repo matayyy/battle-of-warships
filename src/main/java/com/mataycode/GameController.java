@@ -4,8 +4,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,24 +12,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameController {
     private Map<String, GameSession> activeGames = new ConcurrentHashMap<>();
 
+    //GET ALL STARTED GAMES() RETURN SET<ID'S> OF GAMES
     @MessageMapping("/getAllGames")
     @SendTo("/topic/getAllGames")
     public Set<String> getGameIdOfStartedGames() {
         return activeGames.keySet();
     }
 
-    //createGame(player) – tworzy nową grę i zwraca ID gry.
+    //CREATE GAME(STRING PLAYER_NAME) RETURN GAME SESSION
     @MessageMapping("/createGame")
     @SendTo("/topic/gameCreated")
-    public GameSession createGame(String player) {
+    public GameSession createGame(Map<String, String> payload) {
+
+        String player = payload.get("player");
         GameSession game = new GameSession(player);
         activeGames.put(game.getGameId(), game);
-        System.out.println("Game created");
+
         return game;
     }
 
-
-    //joinGame(gameId, player) – drugi gracz dołącza do istniejącej gry.
+    //JOIN GAME(STRING GAME ID, STRING PLAYER) RETURN GAME SESSION
     @MessageMapping("/joinGame")
     @SendTo("/topic/gameStarted")
     public GameSession joinGame(Map<String, String> payload) {
@@ -40,16 +40,86 @@ public class GameController {
 
         GameSession game = activeGames.get(gameId);
 
+        //ASSIGN PLAYER2 IF GAME NOT STARTED
         if (game != null && !game.isReady()) {
             game.addPlayer(player);
         }
 
         activeGames.put(gameId, game);
 
-        System.out.println("Game started");
-        System.out.println(game);
         return game;
     }
+
+    //SEND BOARD(STRING GAME_ID) RETURN GAME SESSION
+    @MessageMapping("/game/board")
+    @SendTo("/topic/boardUpdate")
+    public GameSession sendEmptyBoard(Map<String, Object> payload) {
+
+        String gameId = (String) payload.get("gameId");
+
+        return activeGames.get(gameId);
+    }
+
+
+    //ATTACK ENEMY BOARD(STRING GAME_ID, INT coordinateX, INY coordinateY, STRING ATTACKER)
+    @MessageMapping("/attack")
+    @SendTo("/topic/attack")
+    public GameSession attack(Map<String, Object> payload) {
+
+        String gameId = (String) payload.get("gameId");
+        String attacker = (String) payload.get("attacker");
+
+        GameSession game = activeGames.get(gameId);
+
+        int x = (Integer) payload.get("x");
+        int y = (Integer) payload.get("y");
+
+        System.out.println("attacker: " + attacker + " x: " + x + " y: " + y);
+
+        game.attack(x,y, attacker);
+
+        return game;
+    }
+
+    //ATTACK ENEMY BOARD(STRING GAME_ID, INT coordinateX, INY coordinateY, STRING ATTACKER)
+    @MessageMapping("/place")
+    @SendTo("/topic/place")
+    public GameSession placeShip(Map<String, Object> payload) {
+
+        String gameId = (String) payload.get("gameId");
+        String placer = (String) payload.get("placer");
+
+        GameSession game = activeGames.get(gameId);
+
+        int x = (Integer) payload.get("x");
+        int y = (Integer) payload.get("y");
+
+        System.out.println("placer: " + placer + " x: " + x + " y: " + y);
+
+        game.placeShip(x,y, placer);
+
+        return game;
+    }
+
+
+
+//    @MessageMapping("/placeShip")
+//    @SendTo("/topic/shipPlaced")
+//    public boolean placeShip(Map<String, Object> payload) {
+//        String gameId = (String) payload.get("gameId");
+//        String player = (String) payload.get("player");
+//        int x = (int) payload.get("x");
+//        int y = (int) payload.get("y");
+//
+//        GameSession game = activeGames.get(gameId);
+//        if (game == null) {
+//            return false; //gra nie istnieje
+//        }
+//
+//        return game.placeShip(x, y, player);
+//    }
+
+
 
 
     @MessageMapping("/shoot")
@@ -76,21 +146,7 @@ public class GameController {
         );
     }
 
-    @MessageMapping("/placeShip")
-    @SendTo("/topic/shipPlaced")
-    public boolean placeShip(Map<String, Object> payload) {
-        String gameId = (String) payload.get("gameId");
-        String player = (String) payload.get("player");
-        int x = (int) payload.get("x");
-        int y = (int) payload.get("y");
 
-        GameSession game = activeGames.get(gameId);
-        if (game == null) {
-            return false; //gra nie istnieje
-        }
-
-        return game.placeShip(x, y, player);
-    }
 
     @MessageMapping("/checkGameOver")
     @SendTo("/topic/gameOver")
@@ -108,37 +164,5 @@ public class GameController {
         }
 
         return "Game is still ongoing";
-    }
-
-    @MessageMapping("/game/board")
-    @SendTo("/topic/boardUpdate")
-    public List<char[][]> sendEmptyBoard(Map<String, Object> payload) {
-
-        String gameId = (String) payload.get("gameId");
-        GameSession game = activeGames.get(gameId);
-
-        //BOARD 1
-        GameBoard board1 = game.getPlayer1Board();
-        board1.placeShip(6,6);
-
-        char[][] emptyBoard = new char[10][10];
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                emptyBoard[i][j] = board1.getBoard()[i][j];
-            }
-        }
-
-        GameBoard board2 = game.getPlayer2Board();
-        char[][] emptyBoard2 = new char[10][10];
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
-                emptyBoard2[i][j] = board2.getBoard()[i][j];
-            }
-        }
-
-        List<char[][]> boards = new ArrayList<>();
-        boards.add(emptyBoard);
-        boards.add(emptyBoard2);
-        return boards;
     }
 }

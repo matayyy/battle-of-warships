@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class GameBoard {
 
     private final int SIZE = 10;
-    private char[][] board; // 'O' - ship, 'X' - shot, '-' - empty
+    private char[][] board; // 'O' - ship, 'X' - shot, '-' - empty, '*' missed shot
 
     public GameBoard() {
         board = new char[SIZE][SIZE];
@@ -33,6 +33,7 @@ public class GameBoard {
             board[x][y] = 'X';
             return true; //trafiony
         }
+        board[x][y] = '*';
         return false; //pudło
     }
 
