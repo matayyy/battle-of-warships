@@ -1,70 +1,17 @@
-let GameId = 0;
+// Funkcja usuwająca statek z kontenera TODO
+function removeShipFromContainer(shipHtml) {
+    const shipContainer = document.querySelector(".ship-container");
+    const shipElements = shipContainer.querySelectorAll(".ship");
 
-//Tworzeie klienta stomp
-const stompClient = new StompJs.Client({
-    brokerURL: 'ws://localhost:8080/game',
-})
-
-//Rozpoczynanie połączenia
-stompClient.activate();
-
-//Połącz klienta stomp
-stompClient.onConnect = (frame) => {
-    console.log("Connected to websocket: " + frame);
-
-    //SUBSKRYBCJA gameCreated
-    stompClient.subscribe('/topic/gameCreated', (message) => {
-        const gameData = JSON.parse(message.body);
-        console.log("Game created: ", gameData.gameId);
-        document.getElementById("gameIdInput").value = JSON.parse(message.body).gameId
-        document.getElementById("gameId").innerText = JSON.parse(message.body).gameId
-    })
-
-    //SUBSKRYPCJA gameStarted
-    stompClient.subscribe('/topic/gameStarted', (message) => {
-        console.log("Game started: ", JSON.parse(message.body))
-        document.getElementById("player1").innerText = "PLAYER 1 NAME: " + JSON.parse(message.body).player1
-        document.getElementById("player2").innerText = "PLAYER 2 NAME: " + JSON.parse(message.body).player2
-    })
-
-    //REFRESH ABOUT ACTIVE GAMES
-    stompClient.subscribe('/topic/getAllGames', (message) => {
-        console.log("All Games: ", JSON.parse(message.body));
-        document.getElementById("allGames").innerText = "All Games: " + JSON.parse(message.body)
-    })
-
-    //GET BOARD
-    stompClient.subscribe('/topic/boardUpdate', (message) => {
-        console.log("BOARD UPDATE: ", JSON.parse(message.body));
-        const gameData = JSON.parse(message.body);
-        const board1 = gameData.player1Board.board;
-        const board2 = gameData.player2Board.board;
-        drawBoard(board1, "board1");
-        drawBoard(board2, "board2");
-    })
-
-    //ATACK
-    stompClient.subscribe('/topic/attack', (message) => {
-        console.log("ATTACK: ", JSON.parse(message.body));
-        getBoard();
-    })
-
-    //PLACE SHIP
-    stompClient.subscribe('/topic/plcae', (message) => {
-        console.log("PLACE: ", JSON.parse(message.body));
-        console.log("PLACED SHIP")
-        getBoard();
-    })
-
+    shipElements.forEach(ship => {
+        if (ship.outerHTML === shipHtml) {
+            ship.remove(); // Usuwamy statek z kontenera
+        }
+    });
 }
 
-//OBSŁUGA BŁĘDÓW
-stompClient.onStompError = (frame) => {
-    console.error('STOMP ERROR', frame)
-}
-
-//------------------------------------------------------------------------------------//
-
+//ATTACK BOARD LOOKING FOR SHIP
+//BLAD PRZY UPUSZCZANIU NA PLANSZE PRZECIWNIKA (OMIJA IFY I UPUSZCZA STATEK NA TWOJA PLANSZE MIMO ALL) TODO
 function attack(gameId, x, y, attacker) {
     stompClient.publish({
         destination: "/app/attack",
@@ -72,39 +19,14 @@ function attack(gameId, x, y, attacker) {
     })
 }
 
-function place(gameId, x, y, placer) {
-    stompClient.publish({
-        destination: "/app/place",
-        body: JSON.stringify({gameId: gameId, x: x, y: y, placer: placer})
-    })
-}
-
-function drawBoard(board, boardId) {
-    const boardDiv = document.getElementById(boardId)
-    boardDiv.innerHTML = "";
-
-    for(let row = 0; row < board.length; row++) {
-        for (let col = 0; col < board[row].length; col++) {
-            const cell = document.createElement("div");
-            cell.classList.add("cell")
-
-            cell.innerHTML = board[row][col];
-
-            // Obsługa przeciągania
-            cell.ondragover = (e) => e.preventDefault();
-            cell.ondrop = (e) => placeShipOnBoard(e, row, col, board);
-
-            // Dodaj nasłuchiwanie na kliknięcie
-            cell.onclick = () => handleCellClick(board, row, col, boardId);
-
-            boardDiv.appendChild(cell);
-        }
-    }
-}
-
+//PLACE SHIP ON YOUR BOARD
 function placeShipOnBoard(event, row, col, board) {
     event.preventDefault();
+
+    const placer = document.getElementById("playerNameInput").value;
+    const getGameId = document.getElementById("gameIdInput").value;
     let boardSize = 10;
+
     const size = event.dataTransfer.getData("size");
 
     if (!size) {
@@ -134,13 +56,51 @@ function placeShipOnBoard(event, row, col, board) {
         }
     }
 
-    const placer = document.getElementById("playerNameInput").value;
-    const getGameId = document.getElementById("gameIdInput").value;
     // Umieszczamy statek
     for (let i = 0; i < shipSize; i++) {
-        place(getGameId, row, col + i, placer)
+        stompClient.publish({
+            destination: "/app/place",
+            body: JSON.stringify({gameId: getGameId, x: row, y: col + i, placer: placer})
+        })
     }
+    // //remove ship
+    // document.querySelector(".ship[data-size='" + shipSize + "']").style.display = "none";
 
+    // Znalezienie wszystkich statków o danym rozmiarze
+    const ships = document.querySelectorAll(".ship[data-size='" + shipSize + "']");
+
+    // Ukrycie tylko pierwszego znalezionego statku
+    for (let ship of ships) {
+        if (ship.style.display !== "none") {
+            ship.style.display = "none";
+            break; // Zatrzymanie po ukryciu jednego statku
+        }
+    }
+}
+
+
+//DRAW BOARD (CREATE NEW)
+function drawBoard(board, boardId) {
+    const boardDiv = document.getElementById(boardId)
+    boardDiv.innerHTML = "";
+
+    for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+            const cell = document.createElement("div");
+            cell.classList.add("cell")
+
+            cell.innerHTML = board[row][col];
+
+            // Obsługa przeciągania
+            cell.ondragover = (e) => e.preventDefault();
+            cell.ondrop = (e) => placeShipOnBoard(e, row, col, board);
+
+            // Dodaj nasłuchiwanie na kliknięcie
+            cell.onclick = () => handleCellClick(board, row, col, boardId);
+
+            boardDiv.appendChild(cell);
+        }
+    }
 }
 
 // // Obsługa przeciągania statków
@@ -161,7 +121,7 @@ function handleCellClick(board, i, j, boardId) {
         // console.log(board)
         let gameId = document.getElementById("gameIdInput").value;
         let attacker = document.getElementById("playerNameInput").value;
-        attack(gameId,i,j, attacker)
+        attack(gameId, i, j, attacker)
         drawBoard(board, boardId);  // Ponownie rysujemy planszę
     }
     console.log("KLIKNIĘTO W:" + i + "/" + j)

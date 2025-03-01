@@ -6,30 +6,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.0.0/bundles/stomp.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="main.js"></script>
+    <script src="stompClient.js"></script>
 </head>
 <body>
 
-<button onclick="createGame()">CREATE NEW GAME</button>
 <input type="text" id="gameIdInput" placeholder="GAME ID">
+<input type="text" id="playerNameInput" placeholder="YOUR NAME">
+<button onclick="createGame()">CREATE NEW GAME</button>
 <button onclick="joinGame()">JOIN TO GAME</button>
 <button onclick="getAllGames()">GET ALL GAMES</button>
-<input type="text" id="playerNameInput" placeholder="YOUR NAME">
 <button onclick="getBoard()">GET BOARD</button>
 
-<div id="gameId">
-    <p>?</p>
-</div>
+<div id="gameIdDiv" style="display: none"></div>
 
 <div id="player1">
-    <p>p1</p>
 </div>
 
 <div id="player2">
-    <p>p2</p>
 </div>
 
 <div id="allGames">
-    <p>Games</p>
 </div>
 
 
@@ -43,11 +39,11 @@
     <!-- GAME BOARD -->
     <div>
         <h2>BOARD 2</h2>
-        <div id="board2" class="board" ></div>
+        <div id="board2" class="board"></div>
     </div>
 
     <!-- Lista statków do przeciągania -->
-    <div id="shipContainer">
+    <div id="ship-container">
         <h2>AVAILABLE SHIPS:</h2>
         <div class="ship" draggable="true" data-size="4">🚢🚢🚢🚢</div>
         <div class="ship" draggable="true" data-size="3">🚢🚢🚢</div>
