@@ -3,60 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.0.0/bundles/stomp.umd.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <script src="main.js"></script>
-    <script src="stompClient.js"></script>
 </head>
 <body>
 
-<input type="text" id="gameIdInput" placeholder="GAME ID">
-<input type="text" id="playerNameInput" placeholder="YOUR NAME">
-<button onclick="createGame()">CREATE NEW GAME</button>
-<button onclick="joinGame()">JOIN TO GAME</button>
-<button onclick="getAllGames()">GET ALL GAMES</button>
-<button onclick="getBoard()">GET BOARD</button>
-
-<div id="gameIdDiv" style="display: none"></div>
-
-<div id="player1">
+<div>
+    <input type="text" id="playerName" placeholder="Player name:">
+    <button onclick="createGame()">CREATE NEW GAME</button>
+</div>
+<div>
+    <input type="text" id="gameId" placeholder="Game id:">
+    <button onclick="joinGame()">JOIN TO GAME</button>
+</div>
+<div>
+    <p>-------------------------</p>
 </div>
 
-<div id="player2">
+<div>
+    <button onclick="getGames()">GET ALL STARTED GAMES</button>
+    <div id="active-games"></div>
 </div>
 
-<div id="allGames">
-</div>
+<script>
 
+    function joinGame() {
+        //Check if player set name
+        const usernameInput = document.getElementById("playerName").value.trim();
+        if (!usernameInput) {
+            alert("Please enter your username!");
+            return false;
+        }
 
-<div style="display: flex; gap: 20px">
-    <!-- GAME BOARD -->
-    <div>
-        <h2>BOARD 1</h2>
-        <div id="board1" class="board"></div>
-    </div>
+        //Check if gameId is present
+        const gameIdInput = document.getElementById("gameId").value.trim();
+        if (!gameIdInput) {
+            alert("Please enter gameId");
+            return false;
+        }
 
-    <!-- GAME BOARD -->
-    <div>
-        <h2>BOARD 2</h2>
-        <div id="board2" class="board"></div>
-    </div>
+        //Join to game
+        fetch("http://localhost:8080/api/game/join", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({player: usernameInput, gameId: gameIdInput})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Joined game:", data);
+                localStorage.setItem("gameId", data.gameId); //save gameId to storage
+                localStorage.setItem("playerName", usernameInput); //save username to storage
+                window.location.href = "game.html"; //move to game.html
+            })
+            .catch(error => console.error("Error: ", error));
+    }
 
-    <!-- Lista statków do przeciągania -->
-    <div id="ship-container">
-        <h2>AVAILABLE SHIPS:</h2>
-        <div class="ship" draggable="true" data-size="4">🚢🚢🚢🚢</div>
-        <div class="ship" draggable="true" data-size="3">🚢🚢🚢</div>
-        <div class="ship" draggable="true" data-size="3">🚢🚢🚢</div>
-        <div class="ship" draggable="true" data-size="2">🚢🚢</div>
-        <div class="ship" draggable="true" data-size="2">🚢🚢</div>
-        <div class="ship" draggable="true" data-size="1">🚢</div>
-        <div class="ship" draggable="true" data-size="1">🚢</div>
-        <div class="ship" draggable="true" data-size="1">🚢</div>
-        <div class="ship" draggable="true" data-size="1">🚢</div>
-    </div>
-</div>
+    function createGame() {
+        //Check if player set name
+        const usernameInput = document.getElementById("playerName").value.trim();
 
+        if (!usernameInput) {
+            alert("Please enter your username!");
+            return false;
+        }
+
+        //Create new game
+        fetch("http://localhost:8080/api/game/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({player: usernameInput})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Game created:", data);
+                localStorage.setItem("gameId", data.gameId); //save gameId to storage
+                localStorage.setItem("playerName", usernameInput); //save username to storage
+                window.location.href = "game.html"; //move to game.html
+            })
+            .catch(error => console.error("Error: ", error))
+
+    }
+
+    function getGames() {
+        fetch("http://localhost:8080/api/game/games")
+            .then(response => response.json())
+            .then(data => {
+                const gameList = document.getElementById("active-games");
+                gameList.innerHTML = "";
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(gameId => {
+                        const gameItem = document.createElement("div");
+                        gameItem.textContent = gameId;
+                        gameItem.style.cursor = "pointer";
+
+                        gameItem.addEventListener("click", () => {
+                            document.getElementById("gameId").value = gameId;
+                        })
+
+                        gameList.appendChild(gameItem);
+                    })
+                } else {
+                    gameList.innerHTML = "NO ACTIVE GAMES FOUND";
+                }
+
+            })
+            .catch(error => console.error("Error: ", error))
+    }
+
+</script>
 
 </body>
 </html>

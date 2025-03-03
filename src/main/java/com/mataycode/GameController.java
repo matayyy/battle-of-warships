@@ -1,16 +1,59 @@
 package com.mataycode;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Controller
+
+@RestController
+@RequestMapping("/api/game")
 public class GameController {
     private Map<String, GameSession> activeGames = new ConcurrentHashMap<>();
+
+    @PostMapping("/create")
+    public ResponseEntity<GameSession> createGameRest(@RequestBody Map<String, String> payload) {
+        String player = payload.get("player");
+        GameSession game = new GameSession(player);
+        activeGames.put(game.getGameId(), game);
+        return ResponseEntity.ok(game);
+    }
+
+    @GetMapping("/games")
+    public ResponseEntity<Set<String>> getGamesRest() {
+        return ResponseEntity.ok(activeGames.keySet());
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<GameSession> joinGameRest(@RequestBody Map<String, String> payload) {
+        String gameId = payload.get("gameId");
+        String player = payload.get("player");
+
+        GameSession game = activeGames.get(gameId);
+
+        //ASSIGN PLAYER2 IF GAME NOT STARTED
+        if (game != null && !game.isReady()) {
+            game.addPlayer(player);
+        }
+
+        activeGames.put(gameId, game);
+
+        return ResponseEntity.ok(game);
+    }
+
+
+//    ----------------------------------------------------------------------------------------
+
+    //GET ALL STARTED GAMES() RETURN SET<ID'S> OF GAMES
+    @MessageMapping("/game/data")
+    @SendTo("/topic/game/data")
+    public GameSession getGameData(Map<String, String> payload) {
+        return activeGames.get(payload.get("gameId"));
+    }
 
     //GET ALL STARTED GAMES() RETURN SET<ID'S> OF GAMES
     @MessageMapping("/getAllGames")

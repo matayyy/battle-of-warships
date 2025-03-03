@@ -1,0 +1,43 @@
+.board {
+    display: grid;
+    grid-template-columns: repeat(10, 2em);
+    grid-template-rows: repeat(10, 2em);
+}
+
+.cell {
+    width: 2em;
+    height: 2em;
+    border-width: 1px 1px 1px 1px;
+    border-style: solid;
+    border-color: cornflowerblue;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*border-right: none;*/
+    /*border-bottom: none;*/
+    /*box-sizing: border-box;*/
+}
+
+/*!* Add border at every 10th child *!*/
+/*.cell:nth-child(10n) {*/
+/*    border-right: 2px solid cornflowerblue;*/
+/*}*/
+
+/*!* Add border at last 10 child *!*/
+/*.cell:nth-last-child(-n+10) {*/
+/*    border-bottom: 2px solid cornflowerblue;;*/
+/*}*/
+
+.ship {
+    /*z-index: 2;*/
+    cursor: grab;
+    width: 2em;
+    height: 2em;
+    background: coral;
+    opacity: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ship[data-size="2"] {width: 4em}

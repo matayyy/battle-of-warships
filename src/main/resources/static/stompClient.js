@@ -47,6 +47,12 @@ stompClient.onConnect = (frame) => {
         drawBoard(board2, "board2");
     })
 
+    //GET GAME DATA
+    stompClient.subscribe('/topic/game/data', (message) => {
+        console.log("GAME DATA: ", JSON.parse(message.body));
+        const gameData = JSON.parse(message.body);
+    })
+
     //ATACK
     stompClient.subscribe('/topic/attack', (message) => {
         console.log("ATTACK: ", JSON.parse(message.body));
