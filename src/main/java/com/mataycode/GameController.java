@@ -45,8 +45,52 @@ public class GameController {
         return ResponseEntity.ok(game);
     }
 
-
 //    ----------------------------------------------------------------------------------------
+
+    //REMOVE ALL SHIPS
+    @MessageMapping("/game/restart")
+    public Boolean removeAllShips(Map<String, String> payload) {
+        String gameId = payload.get("gameId");
+        String player = payload.get("playerName");
+
+        GameSession game = activeGames.get(gameId);
+        boolean removing = game.removeAllShips(player);
+        activeGames.put(gameId, game);
+
+        return removing;
+    }
+
+    //REMOVE SHIP 1x1
+    @MessageMapping("/remove/ship")
+    @SendTo("/topic/remove/ship")
+    public Boolean canRemoveShip(Map<String, String> payload) {
+        String gameId = payload.get("gameId");
+        String player = payload.get("playerName");
+        int x = Integer.parseInt(payload.get("x"));
+        int y = Integer.parseInt(payload.get("y"));
+
+        GameSession game = activeGames.get(gameId);
+        boolean placement = game.removeShip(x, y, player);
+        activeGames.put(gameId, game);
+
+        return placement;
+    }
+
+    //PLACE SHIP 1x1
+    @MessageMapping("/place/ship")
+    @SendTo("/topic/place/ship")
+    public Boolean canPlaceShip(Map<String, String> payload) {
+        String gameId = payload.get("gameId");
+        String player = payload.get("playerName");
+        int x = Integer.parseInt(payload.get("x"));
+        int y = Integer.parseInt(payload.get("y"));
+
+        GameSession game = activeGames.get(gameId);
+        boolean placement = game.placeShip(x, y, player);
+        activeGames.put(gameId, game);
+
+        return placement;
+    }
 
     //GET ALL STARTED GAMES() RETURN SET<ID'S> OF GAMES
     @MessageMapping("/game/data")
@@ -143,27 +187,6 @@ public class GameController {
 
         return game;
     }
-
-
-
-//    @MessageMapping("/placeShip")
-//    @SendTo("/topic/shipPlaced")
-//    public boolean placeShip(Map<String, Object> payload) {
-//        String gameId = (String) payload.get("gameId");
-//        String player = (String) payload.get("player");
-//        int x = (int) payload.get("x");
-//        int y = (int) payload.get("y");
-//
-//        GameSession game = activeGames.get(gameId);
-//        if (game == null) {
-//            return false; //gra nie istnieje
-//        }
-//
-//        return game.placeShip(x, y, player);
-//    }
-
-
-
 
     @MessageMapping("/shoot")
     @SendTo("/topic/moveResult")

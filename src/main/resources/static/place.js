@@ -15,8 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
         cell.addEventListener("dragover", allowDrop);
         cell.addEventListener("drop", (event) => handleDrop(event, cell));
     });
-
-    const container = document.getElementById("container")
 })
 
 
@@ -25,11 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function createGameBoard() {
     const gameBoard = document.getElementById("gameBoard");
 
-    for (let row = 1; row <=10; row++) {
-        for (let col =1; col <= 10; col++) {
+    for (let row = 0; row <10; row++) {
+        for (let col =0; col <10; col++) {
             const cell = document.createElement("div");
             cell.classList.add("cell");
-
 
             //set data
             cell.dataset.row = row;
@@ -44,53 +41,97 @@ function allowDrop(event) {
     event.preventDefault();
 }
 
+
 function handleDrop(event, cell) {
     event.preventDefault();
     const draggedId = event.dataTransfer.getData("text");
     const draggedElement = document.getElementById(draggedId);
 
-    console.log("upuszczam w:", "rząd:", cell.dataset.row, "kolumna:",cell.dataset.col)
-
-    if (draggedElement.dataset.size == 1) {
-        if(cell.children.length === 0) {
-            cell.appendChild(draggedElement);
-        } else {
-            console.log("CELL ALREADY TAKEN")
-        }
+    // Sprawdzenie i ustawienie atrybutu placed, jeśli jeszcze nie istnieje
+    if (draggedElement.placed === undefined) {
+        draggedElement.placed = false;
     }
 
-    if (draggedElement.dataset.size == 2) {
-
-        if (cell.children.length === 0 && checkNextCell()) {
-            cell.appendChild(draggedElement);
-            return;
-        }
-        console.log("NO ENOUGH SPACE");
-
-        // if(cell.children.length === 0 && getNextCell()) {
-        //     console.log(draggedElement.dataset.size)
-        //     cell.appendChild(draggedElement);
-        // } else {
-        //     console.log("CELL ALREADY TAKEN")
-        // }
+    //remove placed ship
+    if (draggedElement.placed) {
+        const oldX = draggedElement.dataset.row;
+        const oldY = draggedElement.dataset.col;
+        console.log("PRZESTAWIAM STATEK");
+        publishRemoveShip(oldX,oldY);
+        draggedElement.placed = false;
     }
 
+    const x = cell.dataset.row;
+    const y = cell.dataset.col
+    console.log("upuszczam w:", "rząd:", x, "kolumna:", y)
 
 
-    // if(cell.children.length === 0) {
-    //     console.log(draggedElement.dataset.size)
-    //     cell.appendChild(draggedElement);
-    // } else {
-    //     console.log("CELL ALREADY TAKEN")
-    // }
 
-    function checkNextCell() {
-        const row = cell.dataset.row;
-        const col = parseInt(cell.dataset.col) + 1; // Przekształcamy na liczbę, a potem dodajemy 1
+    if(cell.children.length === 0) {
+        //SEND TO BACKEND
+        publishPlaceShip(x, y);
+        cell.appendChild(draggedElement);
 
-        return !!document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        //set data to ship
+        draggedElement.dataset.row = x;
+        draggedElement.dataset.col = y;
+        draggedElement.placed = true;
+    } else {
+        console.log("CELL ALREADY TAKEN")
     }
 
 }
 
+function publishRemoveShip(x, y) {
+    let gameId = localStorage.getItem("gameId");
+    let playerName = localStorage.getItem("playerName");
 
+    stompClient.publish({
+        destination: "/app/remove/ship",
+        body: JSON.stringify({x: x, y: y, gameId: gameId, playerName: playerName})
+    })
+}
+
+function publishPlaceShip(x, y) {
+    let gameId = localStorage.getItem("gameId");
+    let playerName = localStorage.getItem("playerName");
+
+    stompClient.publish({
+        destination: "/app/place/ship",
+        body: JSON.stringify({x: x, y: y, gameId: gameId, playerName: playerName})
+    })
+}
+
+function getData() {
+    let gameId = localStorage.getItem("gameId");
+
+    stompClient.publish({
+        destination: "/app/game/data",
+        body: JSON.stringify({gameId: gameId})
+    })
+}
+
+window.onload = function () {
+    let gameId = localStorage.getItem("gameId");
+    let playerName = localStorage.getItem("playerName");
+
+    stompClient.publish({
+        destination: "/app/game/restart",
+        body: JSON.stringify({gameId: gameId, playerName: playerName})
+    })
+}
+
+function goToGame() {
+
+    //check if all ship is placed
+    if(!allShipPlaced()) {
+        alert("PLEASE PLACE ALL SHIPS");
+        return;
+    }
+
+    window.location.href = "game.html" // move to game.
+}
+
+function allShipPlaced() {
+    return true;
+}

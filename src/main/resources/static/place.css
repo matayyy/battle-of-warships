@@ -13,20 +13,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /*border-right: none;*/
-    /*border-bottom: none;*/
-    /*box-sizing: border-box;*/
 }
 
-/*!* Add border at every 10th child *!*/
-/*.cell:nth-child(10n) {*/
-/*    border-right: 2px solid cornflowerblue;*/
-/*}*/
-
-/*!* Add border at last 10 child *!*/
-/*.cell:nth-last-child(-n+10) {*/
-/*    border-bottom: 2px solid cornflowerblue;;*/
-/*}*/
 
 .ship {
     /*z-index: 2;*/
@@ -41,3 +29,15 @@
 }
 
 .ship[data-size="2"] {width: 4em}
+
+.draggable {
+    width: 25%;
+    min-height: 6.5em;
+    margin: 1rem 0 0 1rem;
+    background-color: #29e;
+    color: white;
+    border-radius: 0.75em;
+    padding: 4%;
+    touch-action: none;
+    user-select: none;
+}

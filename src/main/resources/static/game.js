@@ -78,7 +78,6 @@ function placeShipOnBoard(event, row, col, board) {
     }
 }
 
-
 //DRAW BOARD (CREATE NEW)
 function drawBoard(board, boardId) {
     const boardDiv = document.getElementById(boardId)
@@ -105,6 +104,7 @@ function drawBoard(board, boardId) {
 
 // // Obsługa przeciągania statków
 document.addEventListener("DOMContentLoaded", () => {
+
     document.querySelectorAll(".ship").forEach(ship => {
         ship.addEventListener("dragstart", (event) => {
             console.log("Dragstart działa!"); // Sprawdź, czy to się loguje
@@ -163,3 +163,9 @@ function joinGame(gameId, player) {
         body: JSON.stringify({gameId: gameId, player: playerInput})
     })
 }
+
+window.onload = function () {
+    // Pobranie wartości z localStorage i przypisanie do inputów
+    document.getElementById("playerNameInput").value = localStorage.getItem("playerName") || "BŁĄD";
+    document.getElementById("gameIdInput").value = localStorage.getItem("gameId") || "BŁĄD";
+};

@@ -53,7 +53,7 @@
                 console.log("Joined game:", data);
                 localStorage.setItem("gameId", data.gameId); //save gameId to storage
                 localStorage.setItem("playerName", usernameInput); //save username to storage
-                window.location.href = "game.html"; //move to game.html
+                window.location.href = "place.html"; //move to game.html
             })
             .catch(error => console.error("Error: ", error));
     }
@@ -80,7 +80,7 @@
                 console.log("Game created:", data);
                 localStorage.setItem("gameId", data.gameId); //save gameId to storage
                 localStorage.setItem("playerName", usernameInput); //save username to storage
-                window.location.href = "game.html"; //move to game.html
+                window.location.href = "place.html"; //move to game.html
             })
             .catch(error => console.error("Error: ", error))
 

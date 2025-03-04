@@ -66,6 +66,15 @@ public class GameSession {
         return false;
     }
 
+    public boolean removeShip(int x, int y, String player) {
+        if (player.equals(player1)) {
+            return player1Board.removeShip(x, y);
+        } else if (player.equals(player2)) {
+            return player2Board.removeShip(x, y);
+        }
+        return false;
+    }
+
     public boolean isGameOver(String player) {
         if (player.equals(player1)) {
             return player2Board.isGameOver(); //sprawdzamy plansze przeciwnika
@@ -117,5 +126,14 @@ public class GameSession {
     @Override
     public int hashCode() {
         return Objects.hash(gameId, player1, player2, currentTurn, player1Board, player2Board);
+    }
+
+    public boolean removeAllShips(String player) {
+        if (player.equals(player1)) {
+            return player1Board.clearBoard();
+        } else if (player.equals(player2)) {
+            return player2Board.clearBoard();
+        }
+        return false;
     }
 }

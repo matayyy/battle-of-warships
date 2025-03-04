@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="place.css">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@5.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="stompClientPlace.js"></script>
     <script src="place.js"></script>
 </head>
 <body>
+
+<button onclick="getData()">GET DATA</button>
+<button onclick="goToGame()">IM READY</button>
+<p id="gameStatus">IS GAME READY?</p>
 
 <div class="board" id="gameBoard"></div>
 
@@ -22,3 +28,4 @@
 
 </body>
 </html>
+

@@ -28,6 +28,14 @@ public class GameBoard {
         return false; //jeśli pole jest już zajęte
     }
 
+    public boolean removeShip(int x, int y) {
+        if (board[x][y] == 'O') {
+            board[x][y] = '-';
+            return true;
+        }
+        return false; //jesli pole było puste
+    }
+
     public boolean attack(int x, int y) {
         if (board[x][y] == 'O') {
             board[x][y] = 'X';
@@ -68,5 +76,14 @@ public class GameBoard {
                 "SIZE=" + SIZE +
                 ", board=" + Arrays.toString(board) +
                 '}';
+    }
+
+    public boolean clearBoard() {
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                board[i][j] = '-';
+            }
+        }
+        return true;
     }
 }
